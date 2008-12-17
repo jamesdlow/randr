@@ -1,4 +1,4 @@
-package com.managedlearning.common.api.rest;
+package com.jameslow.randr;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -10,10 +10,11 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Iterator;
 
 public class RestClient extends RestClass {
 	private String url;
-	private Map<String,String> params = new HashMap<String,String>();
+	private Map params = new HashMap();
 	
 	public RestClient(String url, String apikey) {
 		this(url,apikey,null);
@@ -24,13 +25,14 @@ public class RestClient extends RestClass {
 	}
 	//Clear all current params
 	public void clearParams() {
-		params = new HashMap<String,String>();
+		params = new HashMap();
 	}
 	//Add a parameter checking if its not one of the predefined reserved params
 	public void addParam(String param, String value) throws RestException {
 		String full = prefix + param;
-		for (String check : reserved) {
-			checkParam(full, check);
+		int i;
+		for (i=0;i<reserved.length;i++) {
+			checkParam(full, reserved[i]);
 		}
 		params.put(full,value);
 	}
@@ -41,12 +43,12 @@ public class RestClient extends RestClass {
 		}
 	}
 	//Get the params valid at this time, don't echo
-	public Map<String,String> getParams() throws RestException {
+	public Map getParams() throws RestException {
 		return getParams("");
 	}
 	//Get the params valid at this time
-	public Map<String,String> getParams(String test) throws RestException {
-		Map<String,String> finalparams = new HashMap<String,String>(params);
+	public Map getParams(String test) throws RestException {
+		Map finalparams = new HashMap(params);
 		finalparams.put(timevar,""+getTime());
 		if (test != null && "".compareTo(test) != 0) { 
 			finalparams.put(testvar,test);
@@ -66,41 +68,43 @@ public class RestClient extends RestClass {
 	public String sendParams(String test) throws RestException{
 		try {
 			URL u = new URL(url);
-		    HttpURLConnection huc = (HttpURLConnection) u.openConnection();
-		    huc.setRequestMethod("POST");
-		    huc.setUseCaches(false);
-		    huc.setDoInput(true);
-		    huc.setDoOutput(true);
-		    HttpURLConnection.setFollowRedirects(true);
-		    huc.setInstanceFollowRedirects(true);
-		    huc.setRequestProperty ("Content-Type","application/x-www-form-urlencoded");
-		    StringBuffer content = new StringBuffer();
-		    boolean firsttime = true;
-		    for (Map.Entry<String, String> e : getParams(test).entrySet()) {
-		    	if (firsttime) {
-		    		firsttime = false;
-		    	} else {
-		    		content.append("&");
-		    	}
-		    	content.append(e.getKey()).append("=").append(URLEncoder.encode(e.getValue(),"UTF-8"));
-		    }
-		    huc.setRequestProperty("Content-Length", "" + content.toString().getBytes().length);
-		    DataOutputStream out = new DataOutputStream(huc.getOutputStream());
+			HttpURLConnection huc = (HttpURLConnection) u.openConnection();
+			huc.setRequestMethod("POST");
+			huc.setUseCaches(false);
+			huc.setDoInput(true);
+			huc.setDoOutput(true);
+			HttpURLConnection.setFollowRedirects(true);
+			huc.setInstanceFollowRedirects(true);
+			huc.setRequestProperty ("Content-Type","application/x-www-form-urlencoded");
+			StringBuffer content = new StringBuffer();
+			boolean firsttime = true;
+			Iterator it = getParams(test).entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry e = (Map.Entry)it.next();
+				if (firsttime) {
+					firsttime = false;
+				} else {
+				content.append("&");
+				}
+				content.append((String)e.getKey()).append("=").append(URLEncoder.encode((String)e.getValue(),"UTF-8"));
+			}
+			huc.setRequestProperty("Content-Length", "" + content.toString().getBytes().length);
+			DataOutputStream out = new DataOutputStream(huc.getOutputStream());
 			out.writeBytes(content.toString());
 			out.flush();
 			out.close();
-		    int code = huc.getResponseCode();
-		    StringBuffer result = new StringBuffer();
-		    BufferedReader in = new BufferedReader( new InputStreamReader(huc.getInputStream()));
-	    	while (in.ready()) {
-	    		result.append(in.readLine());	
-	    	}
-	    	huc.disconnect();
-		    if (code >= 200 && code < 300) {
-			    //Codes 200 - 300 indicate a correct response
-		    } else {
-		    	throw new RestException("HTTP error occured: " + code);
-		    }		    
+			int code = huc.getResponseCode();
+			StringBuffer result = new StringBuffer();
+			BufferedReader in = new BufferedReader( new InputStreamReader(huc.getInputStream()));
+			while (in.ready()) {
+				result.append(in.readLine());	
+			}
+			huc.disconnect();
+			if (code >= 200 && code < 300) {
+				//Codes 200 - 300 indicate a correct response
+			} else {
+				throw new RestException("HTTP error occured: " + code);
+			}		    
 			return result.toString();
 		} catch (MalformedURLException e1) {
 			throw new RestException("Incorrect URL format",-1,e1);

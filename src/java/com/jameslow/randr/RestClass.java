@@ -1,8 +1,9 @@
-package com.managedlearning.common.api.rest;
+package com.jameslow.randr;
 
 import java.util.Date;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Iterator;
 
 public class RestClass {
 	protected String apikey;
@@ -42,18 +43,20 @@ public class RestClass {
 		return (long) Math.floor((new Date()).getTime()/1000);
 	}
 	//Check the params are signed with the api key and can therefore be trusted
-	public String signature(Map<String,String> params) throws RestException {
+	public String signature(Map params) throws RestException {
 		String result = "";
 		//Sort alphabetically by key name
-		TreeMap<String,String> sorted = new TreeMap<String,String>(params);
+		TreeMap sorted = new TreeMap(params);
 		//Include the API key in the signature, even though we don't transmit
 		sorted.put(apivar,apikey);
 		//Map is already sorted alphabetically
-		for (Map.Entry<String, String> e : sorted.entrySet()) {
-			String key = e.getKey();
+		Iterator it = params.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry e = (Map.Entry)it.next();
+			String key = (String)e.getKey();
 			if (key.compareTo(sigvar) != 0 &&
 				("".compareTo(prefix) == 0 || (key.length() > prefix.length() && key.substring(0, prefix.length()).compareTo(prefix) == 0))) {
-					result = result + key + e.getValue();
+					result = result + key + (String)e.getValue();
 			}
 		}
 		try {

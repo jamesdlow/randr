@@ -1,4 +1,4 @@
-package com.managedlearning.common.api.rest;
+package com.jameslow.randr;
 
 import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
