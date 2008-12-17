@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="RandR" default="all" basedir=".">
+    <property name="props" value="build.properties"/>
+    <property file="${props}"/>
+    <property name="secret" value="secret.properties"/>
+    <property file="${secret}"/>
+	<!-- Preexisitng Directories -->
+	<property name="tools" location="tools"/>
+		<property name="google" location="${tools}/google"/>
+		<property name="sourceforge" location="${tools}/sourceforge"/>
+		<property name="sflib" location="${sourceforge}/lib"/>
+	<property name="lib" location="lib"/>
+	<property name="src" location="src"/>
+		<property name="java" location="${src}/java"/>
+		<property name="net" location="${src}/net"/>
+		<property name="php" location="${src}/php"/>
+	<property name="build" location="build"/>
+		<property name="build.java" location="${build}/java"/>
+		<property name="build.net" location="${build}/net"/>
+		<property name="build.php" location="${build}/php"/>
+		<property name="jarfile" location="${build}/${google.project}.jar"/>
+		
+	<condition property="version.do">
+		<istrue value="${build.doversion}"/>
+	</condition>
+	<condition property="version.default">
+		<isfalse value="${build.doversion}"/>
+	</condition>
+
+	<condition property="google.classpath"
+		value="${google};${google}/ant-googlecode-0.0.1.jar"
+		else="${google}/ant-googlecode-0.0.1.jar">
+		<not>
+			<available classname="org.apache.tools.ant.util.Base64Converter"/>
+		</not>
+	</condition>
+	<echo message="Google classpath set to ${google.classpath}"/>
+	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="${google.classpath}" name="gcupload"/>
+	
+	<fileset id="sourceforge.jars" dir="${sflib}">
+		<include name="**/*.jar"/>
+	</fileset>
+	<path id="sourceforge.id">
+		<fileset refid="sourceforge.jars"/>
+		<pathelement path="${sourceforge}/sfutils-1.01RC1.jar"/>
+	</path>
+	<pathconvert property="sourceforge.classpath" pathsep=";">
+		<path refid="sourceforge.id"/>
+	</pathconvert>
+	<echo message="Sourceforge classpath set to ${sourceforge.classpath}"/>
+	<taskdef name="sfpublish" classname="org.apache.tools.ant.taskdefs.optional.sourceforge.SourceForgePublish" classpath="${sourceforge.classpath}"/>
+
+	<target name="compile.base64" description="Compile Base64 for versions of ant below 1.7">
+		<javac srcdir="${google}" destdir="${google}"
+			source="1.4" target="1.4"
+			failonerror="true"
+	       	includes="**/*.java">
+		</javac>
+	</target>
+
+	<fileset id="lib.jars" dir="${lib}">
+		<include name="**/*.jar"/>
+	</fileset>
+	<path id="lib.path">
+		<fileset refid="lib.jars"/>
+	</path>
+
+	<target name="prepare" description="Create build dirs">
+		<mkdir dir="${build}"/>
+			<mkdir dir="${build.java}"/>
+			<mkdir dir="${build.net}"/>
+			<mkdir dir="${build.php}"/>
+	</target>
+
+	<target name="build" description="Increment build number and date">
+		<propertyfile file="${props}">
+			<entry key="build.date" type="date" value="now"/>
+		</propertyfile>
+		<buildnumber file="${props}"/>
+	</target>
+	
+	<target name="java" description="Compile Java Code" depends="prepare">
+		<javac srcdir="${src}" destdir="${build.java}"
+			source="${build.jvm}" target="${build.jvm}"
+			failonerror="true"
+			includes="**/*.*"
+			classpathref="lib.path">
+		</javac>
+		<jar jarfile="${jarfile}" basedir="${build.java}">
+		</jar>
+	</target>
+	
+	<target name="net" description="Compile .NET Code" depends="prepare">
+
+	</target>
+
+	<target name="php" description="Compile PHP Code" depends="prepare">
+
+	</target>
+
+	<target name="all" description="Create All" depends="build,java,net,php">
+		<!-- At the moment alltemplates requires nothing else -->
+	</target>
+
+	<target name="version.input" depends="all" if="version.do">
+		<input
+			message="Please input a new version. Current version ${build.version}"
+			addproperty="new.version"
+		 />
+		<propertyfile file="${props}">
+			<entry key="build.version" value="${new.version}"/>
+		</propertyfile>
+		<condition property="version.default">
+			<equals arg1="${new.doversion}" arg2=""/>
+		</condition>
+	</target>
+	<target name="version.default" depends="version.input">
+		<property name="new.version" value="${build.version}"/>
+	</target>
+	<target name="version" depends="version.input,version.default" description="Prompt user to enter new version">
+		<!-- At the moment version requires nothing else -->
+	</target>
+
+	<target name="release" depends="version" description="Create a new release of plugins">
+		<property name="ant.zip" value="limegreen-ant-${new.version}.zip"/>
+		<property name="ant.zip.full" location="${build}/${ant.zip}"/>
+		<zip destfile="${ant.zip.full}">
+			<fileset dir="${antbuild}">
+				<include name="**"/>
+				<exclude name="**/.svn/**"/>
+			</fileset>
+		</zip>
+		<property name="xcode.zip" value="limegreen-xcode-${new.version}.zip"/>
+		<property name="xcode.zip.full" location="${build}/${xcode.zip}"/>
+		<zip destfile="${xcode.zip.full}">
+			<fileset dir="${xcodebuild}">
+				<include name="**"/>
+				<exclude name="**/.svn/**"/>
+			</fileset>
+		</zip>
+		<property name="source.zip" value="limegreen-source-${new.version}.zip"/>
+		<property name="source.zip.full" location="${build}/${source.zip}"/>
+		<move file="secret.properties" tofile="secret.temp.properties"/>
+		<copy file="secret.example.properties" tofile="secret.properties"/>
+		<zip destfile="${source.zip.full}">
+			<fileset dir=".">
+				<include name="**"/>
+				<exclude name="**/.svn/**"/>
+				<exclude name="**/build/**"/>
+				<exclude name="secret.temp.properties"/>
+			</fileset>
+		</zip>
+		<delete file="secret.properties"/>
+		<move file="secret.temp.properties" tofile="secret.properties"/>
+	</target>
+
+	<target name="sourceforge" description="Deploy All To Sourceforge" depends="release">
+		<tstamp>
+			<format property="sourceforge.date" pattern="d/M/yyyy"/>
+		</tstamp>
+		<sfpublish
+			releasename="${new.version}"
+			packagename="${sourceforge.project}"
+			packagehidden="no"
+			hidden="no"
+			projectshortname="${sourceforge.project}"
+			projectname="Limegreen"
+			username="${sourceforge.username}"
+			password="${sourceforge.password}"
+			releasedate="${sourceforge.date}">
+			<filespec
+				file="${source.zip.full}"
+				filetype="source_zip"
+				processortype="platform_independent"/>
+			<filespec
+				file="${xcode.zip.full}"
+				filetype="source_zip"
+				processortype="platform_independent"/>
+			<filespec
+				file="${ant.zip.full}"
+				filetype="source_zip"
+				processortype="platform_independent"/>
+		</sfpublish>
+	</target>
+
+	<target name="google" description="Deploy All To GoogleCode" depends="release">
+		<gcupload 
+        	username="${google.username}" 
+	        password="${google.password}" 
+    	    projectname="${google.project}" 
+        	filename="${source.zip.full}" 
+	        targetfilename="${source.zip}"
+    	    summary="Limegreen Raw Source Code"
+        	labels="OpSys-OSX, Type-Source, Limegreen, Source"/>
+		<gcupload 
+        	username="${google.username}" 
+	        password="${google.password}" 
+    	    projectname="${google.project}" 
+        	filename="${xcode.zip.full}" 
+	        targetfilename="${xcode.zip}"
+    	    summary="Limegreen Xcode Project Template"
+        	labels="Featured, OpSys-OSX, Type-Source, Limegreen, XCode"/>
+		<gcupload 
+        	username="${google.username}" 
+	        password="${google.password}" 
+    	    projectname="${google.project}" 
+        	filename="${ant.zip.full}" 
+	        targetfilename="${ant.zip}"
+    	    summary="Limegreen Ant Project Template"
+        	labels="Featured, OpSys-All, Type-Source, Limegreen, Ant"/>
+	</target>
+	
+	<target name="deploy" description="Deploy All To GoogleCode And Sourceforge" depends="sourceforge,google">
+		<!-- At the moment deploy requires nothing else -->
+	</target>
+
+	<target name="clean" description="Remove build and dist directories">
+		<delete dir="${build}"/>
+	</target>
+</project>
