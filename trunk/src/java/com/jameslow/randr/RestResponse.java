@@ -1,4 +1,4 @@
-package com.managedlearning.common.api.rest;
+package com.jameslow.randr;
 
 public abstract class RestResponse {
 	public static final String SUCCESS = "success";

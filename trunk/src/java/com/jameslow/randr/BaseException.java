@@ -1,4 +1,4 @@
-package com.managedlearning.common.api.rest;
+package com.jameslow.randr;
 
 public class BaseException extends Exception {
 	private String errorMsg;

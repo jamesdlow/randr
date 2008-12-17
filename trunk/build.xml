@@ -121,24 +121,27 @@
 		<!-- At the moment version requires nothing else -->
 	</target>
 
-	<target name="release" depends="version" description="Create a new release of plugins">
-		<property name="ant.zip" value="limegreen-ant-${new.version}.zip"/>
-		<property name="ant.zip.full" location="${build}/${ant.zip}"/>
-		<zip destfile="${ant.zip.full}">
-			<fileset dir="${antbuild}">
-				<include name="**"/>
-				<exclude name="**/.svn/**"/>
+	<target name="release" depends="version" description="Create a new release of libraries">
+		<property name="java.zip" value="randr-java-${new.version}.zip"/>
+		<property name="java.zip.full" location="${build}/${java.zip}"/>
+		<zip destfile="${java.zip.full}">
+			<fileset dir="${build}">
+				<include name="${google.project}.jar"/>
 			</fileset>
 		</zip>
-		<property name="xcode.zip" value="limegreen-xcode-${new.version}.zip"/>
-		<property name="xcode.zip.full" location="${build}/${xcode.zip}"/>
-		<zip destfile="${xcode.zip.full}">
-			<fileset dir="${xcodebuild}">
-				<include name="**"/>
-				<exclude name="**/.svn/**"/>
-			</fileset>
+		<!--
+		<property name="net.zip" value="randr-net-${new.version}.zip"/>
+		<property name="net.zip.full" location="${build}/${net.zip}"/>
+		<zip destfile="${net.zip.full}">
+
 		</zip>
-		<property name="source.zip" value="limegreen-source-${new.version}.zip"/>
+		<property name="php.zip" value="randr-php-${new.version}.zip"/>
+		<property name="php.zip.full" location="${build}/${php.zip}"/>
+		<zip destfile="${php.zip.full}">
+
+		</zip>
+		-->
+		<property name="source.zip" value="randr-source-${new.version}.zip"/>
 		<property name="source.zip.full" location="${build}/${source.zip}"/>
 		<move file="secret.properties" tofile="secret.temp.properties"/>
 		<copy file="secret.example.properties" tofile="secret.properties"/>
