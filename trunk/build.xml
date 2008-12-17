@@ -167,7 +167,7 @@
 			packagehidden="no"
 			hidden="no"
 			projectshortname="${sourceforge.project}"
-			projectname="Limegreen"
+			projectname="R And R"
 			username="${sourceforge.username}"
 			password="${sourceforge.password}"
 			releasedate="${sourceforge.date}">
@@ -176,12 +176,8 @@
 				filetype="source_zip"
 				processortype="platform_independent"/>
 			<filespec
-				file="${xcode.zip.full}"
-				filetype="source_zip"
-				processortype="platform_independent"/>
-			<filespec
-				file="${ant.zip.full}"
-				filetype="source_zip"
+				file="${java.zip.full}"
+				filetype="binary_zip"
 				processortype="platform_independent"/>
 		</sfpublish>
 	</target>
@@ -193,24 +189,16 @@
     	    projectname="${google.project}" 
         	filename="${source.zip.full}" 
 	        targetfilename="${source.zip}"
-    	    summary="Limegreen Raw Source Code"
-        	labels="OpSys-OSX, Type-Source, Limegreen, Source"/>
+    	    summary="R And R Source Code"
+        	labels="OpSys-OSX, Type-Source, RandR, Source"/>
 		<gcupload 
         	username="${google.username}" 
 	        password="${google.password}" 
     	    projectname="${google.project}" 
-        	filename="${xcode.zip.full}" 
-	        targetfilename="${xcode.zip}"
-    	    summary="Limegreen Xcode Project Template"
-        	labels="Featured, OpSys-OSX, Type-Source, Limegreen, XCode"/>
-		<gcupload 
-        	username="${google.username}" 
-	        password="${google.password}" 
-    	    projectname="${google.project}" 
-        	filename="${ant.zip.full}" 
-	        targetfilename="${ant.zip}"
-    	    summary="Limegreen Ant Project Template"
-        	labels="Featured, OpSys-All, Type-Source, Limegreen, Ant"/>
+        	filename="${java.zip.full}" 
+	        targetfilename="${java.zip}"
+    	    summary="R And R Java Library"
+        	labels="Featured, OpSys-OSX, Type-Source, RandR, Java"/>
 	</target>
 	
 	<target name="deploy" description="Deploy All To GoogleCode And Sourceforge" depends="sourceforge,google">
