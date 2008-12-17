@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="RandR" default="all" basedir=".">
-    <property name="props" value="build.properties"/>
-    <property file="${props}"/>
-    <property name="secret" value="secret.properties"/>
-    <property file="${secret}"/>
+	<property name="props" value="build.properties"/>
+	<property file="${props}"/>
+	<property name="secret" value="secret.properties"/>
+	<property file="${secret}"/>
 	<!-- Preexisitng Directories -->
 	<property name="tools" location="tools"/>
 		<property name="google" location="${tools}/google"/>
@@ -183,22 +183,22 @@
 	</target>
 
 	<target name="google" description="Deploy All To GoogleCode" depends="release">
-		<gcupload 
-        	username="${google.username}" 
-	        password="${google.password}" 
-    	    projectname="${google.project}" 
-        	filename="${source.zip.full}" 
-	        targetfilename="${source.zip}"
-    	    summary="R And R Source Code"
-        	labels="OpSys-OSX, Type-Source, RandR, Source"/>
-		<gcupload 
-        	username="${google.username}" 
-	        password="${google.password}" 
-    	    projectname="${google.project}" 
-        	filename="${java.zip.full}" 
-	        targetfilename="${java.zip}"
-    	    summary="R And R Java Library"
-        	labels="Featured, OpSys-OSX, Type-Source, RandR, Java"/>
+		<gcupload
+			username="${google.username}"
+			password="${google.password}"
+			projectname="${google.project}"
+			filename="${source.zip.full}"
+			targetfilename="${source.zip}"
+			summary="R And R Source Code"
+			labels="OpSys-OSX, Type-Source, RandR, Source"/>
+		<gcupload
+			username="${google.username}"
+			password="${google.password}"
+			projectname="${google.project}"
+			filename="${java.zip.full}"
+			targetfilename="${java.zip}"
+			summary="R And R Java Library"
+			labels="Featured, OpSys-OSX, Type-Source, RandR, Java"/>
 	</target>
 	
 	<target name="deploy" description="Deploy All To GoogleCode And Sourceforge" depends="sourceforge,google">
