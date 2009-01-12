@@ -1,8 +1,6 @@
 package com.jameslow.randr;
 
 public abstract class RestResponse {
-	public static final String SUCCESS = "success";
-	public static final String ERROR = "error";
 	private RestResponse base;
 	
 	public RestResponse() {
@@ -30,13 +28,13 @@ public abstract class RestResponse {
 		WriteError(message,-1);
 	}
 	public void WriteError(String message, int code) throws ResponseException {
-		WriteResponse(message,code,true);
+		WriteResponse(message,code,false);
 	}
-	public void WriteResponse(String message, int code, boolean error) throws ResponseException {
+	public void WriteResponse(String message, int code, boolean success) throws ResponseException {
 		if (base != null) {
-			base.WriteResponse(message, code, error);
+			base.WriteResponse(message, code, success);
 		}
-		writeResponseImplementation(message,code,error);
+		writeResponseImplementation(message,code,success);
 	}
-	protected abstract void writeResponseImplementation(String message, int code, boolean error) throws ResponseException;
+	protected abstract void writeResponseImplementation(String message, int code, boolean success) throws ResponseException;
 }

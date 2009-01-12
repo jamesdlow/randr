@@ -19,6 +19,12 @@ public class RestClass {
 	private static final String TEST = "test";
 	public static final String TEST_ECHO = "echo";
 	public static final String DELIM = ";";
+	public static final String RESULT = "result";
+	public static final String STATUS = "status";
+	public static final String CODE = "code";
+	public static final String MESSAGE = "message";
+	public static final String SUCCESS = "SUCCESS";
+	public static final String ERROR = "ERROR";
 
 	public RestClass(String apikey) {
 		this(apikey,null);
@@ -50,7 +56,7 @@ public class RestClass {
 		//Include the API key in the signature, even though we don't transmit
 		sorted.put(apivar,apikey);
 		//Map is already sorted alphabetically
-		Iterator it = params.entrySet().iterator();
+		Iterator it = sorted.entrySet().iterator();
 		while (it.hasNext()) {
 			Map.Entry e = (Map.Entry)it.next();
 			String key = (String)e.getKey();

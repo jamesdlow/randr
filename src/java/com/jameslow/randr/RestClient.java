@@ -49,20 +49,32 @@ public class RestClient extends RestClass {
 	//Get the params valid at this time
 	public Map getParams(String test) throws RestException {
 		Map finalparams = new HashMap(params);
-		finalparams.put(timevar,""+getTime());
 		if (test != null && "".compareTo(test) != 0) { 
 			finalparams.put(testvar,test);
 		}
+		finalparams.put(timevar,""+getTime());
 		finalparams.put(sigvar,signature(finalparams));
 		return finalparams;
 	}
-	//Post the params to the given url and return the contents, don't echo
-	public String sendParams() throws RestException{
-		return sendParams(false);
+	//Post the params to the given url and return the contents, echo
+	public String echoParams() throws RestException{
+		return sendParams(TEST_ECHO);
 	}
-	//Post the params to the given url and return the contents, optional echo
-	public String sendParams(boolean echo) throws RestException{
-		return sendParams((echo ? TEST_ECHO : ""));
+	//Post the params to the given url and return a result, echo
+	public RestResult echoResult() throws RestException{
+		return getResult(TEST_ECHO);
+	}
+	//Post the params to the given url and return a result
+	public RestResult getResult() throws RestException{
+		return getResult("");
+	}
+	//Post the params to the given url and return a result, optional test
+	public RestResult getResult(String test) throws RestException{
+		return new RestResult(sendParams(test));
+	}
+	//Post the params to the given url and return the contents
+	public String sendParams() throws RestException{
+		return sendParams("");
 	}
 	//Post the params to the given url and return the contents, optional test
 	public String sendParams(String test) throws RestException{
