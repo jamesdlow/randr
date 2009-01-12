@@ -1,6 +1,6 @@
 <?php
 /* 
- * File: restlib.php
+ * File: randr.php
  * Date: 13/08/2008
  * Website: http://code.google.com/p/randr/
  * About: RandR (REST and relaxtion) generic REST library
