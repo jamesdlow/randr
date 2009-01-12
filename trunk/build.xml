@@ -135,12 +135,23 @@
 		<zip destfile="${net.zip.full}">
 
 		</zip>
+		-->
+		<copy todir="${build.php}">
+			<fileset dir="${php}">
+				<include name="**"/>
+				<exclude name="**/.svn/**"/>
+			</fileset>
+			<filterset>
+				<filter token="RandRVersion" value="${new.version}"/>
+			</filterset>
+		</copy>
 		<property name="php.zip" value="randr-php-${new.version}.zip"/>
 		<property name="php.zip.full" location="${build}/${php.zip}"/>
 		<zip destfile="${php.zip.full}">
-
+			<fileset dir="${build.php}">
+				<include name="randrrestlib.php"/>
+			</fileset>
 		</zip>
-		-->
 		<property name="source.zip" value="randr-source-${new.version}.zip"/>
 		<property name="source.zip.full" location="${build}/${source.zip}"/>
 		<move file="secret.properties" tofile="secret.temp.properties"/>

@@ -39,7 +39,7 @@ public class RestClient extends RestClass {
 	//Check if a param is not equal
 	private void checkParam(String param, String check) throws RestException {
 		if (param.compareTo(check) == 0) {
-			throw new RestException("Param name cannot equal " + param.substring(prefix.length()));		
+			throw new RestException("Param name cannot equal " + param.substring(prefix.length()));
 		}
 	}
 	//Get the params valid at this time, don't echo

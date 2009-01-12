@@ -52,7 +52,7 @@ public class RestService extends RestClass {
 			if (firsttime) {
 				firsttime = false;
 			} else {
-				message =  message + DELIM;
+				message = message + DELIM;
 			}
 			message = message + (String)e.getKey() + ":" + (String)e.getValue();
 		}

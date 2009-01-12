@@ -37,7 +37,7 @@ public class BaseException extends Exception {
 	}
 	public String getMessage() {
 		if(exception != null)
-			return errorMsg + ": " + exception.getMessage();
+			return errorMsg + RestClass.DELIM + " " + exception.getMessage();
 		else
 			return errorMsg;
 	}
