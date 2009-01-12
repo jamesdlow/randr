@@ -26,6 +26,24 @@ class ResponseException extends Exception {
 	}
 }
 
+class RestResult {
+	function __construct($result) {
+		$xml = new SimpleXMLElement($result);
+		$this->status = strtoupper($this->xml[RestClass::STATUS]) == 'SUCCESS';
+		$this->code = $this->xml[RestClass::CODE];
+		$this->message = $this->xml[RestClass::MESSAGE];
+	}
+	function getStatus() {
+		return $this->status;
+	}
+	function getCode() {
+		return $this->code;
+	}
+	function getMessage() {
+		return $this->message;
+	}
+}
+
 //Master RestClass which implements common code such as variable prefixes and signature checking
 abstract class RestClass {
 	const TIME = 'time';
@@ -33,7 +51,13 @@ abstract class RestClass {
 	const APIKEY = 'apikey';
 	const TEST = 'test';
 	const TEST_ECHO = 'echo';
+	const RESULT = 'result';
+	const STATUS = 'status';
+	const CODE = 'code';
+	const MESSAGE = 'message';
 	const DELIM = ';';
+	const SUCCESS = 'SUCCESS';
+	const ERROR = 'ERROR';
 	
 	function __construct ($apikey, $prefix = null) {
 		$this->apikey = $apikey;
@@ -82,15 +106,14 @@ class RestService extends RestClass {
 	}
 	function process() {
 		try {
-			if ($this->validate()) {
-				$test = $this->params[$this->testvar];
-				if ($test == RestClass::TEST_ECHO) {
-					$result = testImplementation();
-				} else {
-					$result = processImplementation();
-				}
-				success($result);
+			$this->validate();
+			$test = $this->params[$this->testvar];
+			if ($test == RestClass::TEST_ECHO) {
+				$result = testImplementation();
+			} else {
+				$result = processImplementation();
 			}
+			success($result);
 		} catch (RestException $e) {
 			error($e->getMessage(), $e->getCode());
 		}
@@ -112,7 +135,7 @@ class RestService extends RestClass {
 	}
 	
 	function response($message, $code = 0, $success = true) {
-		return "<response><status>".($success ? "SUCCESS" : "ERROR")."</status><code>".$code."</code><message>".$message."</message></response>";
+		return "<".RestClass::RESULT."><".RestClass::STATUS.">".($success ? RestClass::SUCCESS : RestClass::ERROR)."</".RestClass::STATUS."><".RestClass::CODE.">".$code."</".RestClass::CODE."><".RestClass::MESSAGE.">".$message."</".RestClass::MESSAGE."></".RestClass::RESULT.">";
 	}
 	//Send success XML
 	function success($msg, $code = 0) {
@@ -149,7 +172,7 @@ class RestService extends RestClass {
 
 //Rest client, a client wanting to use a rest service should use this class
 class RestClient extends RestClass {
-	function __construct ($apikey, $prefix = null, $url) {
+	function __construct ($url, $apikey, $prefix = null) {
 		parent::__construct($apikey, $prefix);
 		$this->params = array();
 		$this->url = $url;
@@ -168,24 +191,36 @@ class RestClient extends RestClass {
 			throw new RestException('Param name cannot equal ' . substr($param,strlen($this->prefix)),E_USER_ERROR);
 		}
 	}
+	//Clear all params
+	function clearParams() {
+		$this->params = array();
+	}
 	//Get the params valid at this time
 	function getParams($test = null) {
 		$params = $this->params;
-		$params[$this->timevar] = time();
 		if ($test != null && $test != '') {
 			$params[$this->testvar] = $test;
 		}
+		$params[$this->timevar] = time();
 		$params[$this->sigvar] = $this->signature($params);
 		return $params;
 	}
-	//Post the params to the given url and return the contents
+
 	function echoParams() {
-		sendParams(RestClass::TEST_ECHO);
+		$this->sendParams(RestClass::TEST_ECHO);
 	}
-	
+
+	function echoResult() {
+		return new RestResult($this->sendParams(RestClass::TEST_ECHO));
+	}
+
 	function sendParams($test = null) {
 		$r = new HTTPRequest($this->url);
 		return $r->Get($this->getParams($test));
+	}
+
+	function getResult($test = null) {
+		return new RestResult($this->sendParams($test));
 	}
 }
 

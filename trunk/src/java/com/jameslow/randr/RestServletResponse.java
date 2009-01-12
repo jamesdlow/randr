@@ -9,7 +9,7 @@ public class RestServletResponse extends RestResponse {
 		this.response = response;
 	}
 	public String GenerateXML(String message, int code, boolean success) {
-		return "<response><status>"+(success ? SUCCESS : ERROR)+"</status><code>"+code+"</code><message>"+message+"</message></response>";
+		return "<"+RestClass.RESULT+"><"+RestClass.STATUS+">"+(success ? RestClass.SUCCESS : RestClass.ERROR)+"</"+RestClass.STATUS+"><"+RestClass.CODE+">"+code+"</"+RestClass.CODE+"><"+RestClass.MESSAGE+">"+message+"</"+RestClass.MESSAGE+"></"+RestClass.RESULT+">";
 	}
 	public void writeResponseImplementation(String message, int code, boolean success) throws ResponseException {
 		try {

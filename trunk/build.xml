@@ -95,7 +95,15 @@
 	</target>
 
 	<target name="php" description="Compile PHP Code" depends="prepare">
-
+		<copy todir="${build.php}">
+			<fileset dir="${php}">
+				<include name="**"/>
+				<exclude name="**/.svn/**"/>
+			</fileset>
+			<filterset>
+				<filter token="RandRVersion" value="${new.version}"/>
+			</filterset>
+		</copy>
 	</target>
 
 	<target name="all" description="Create All" depends="build,java,net,php">
@@ -136,15 +144,6 @@
 
 		</zip>
 		-->
-		<copy todir="${build.php}">
-			<fileset dir="${php}">
-				<include name="**"/>
-				<exclude name="**/.svn/**"/>
-			</fileset>
-			<filterset>
-				<filter token="RandRVersion" value="${new.version}"/>
-			</filterset>
-		</copy>
 		<property name="php.zip" value="randr-php-${new.version}.zip"/>
 		<property name="php.zip.full" location="${build}/${php.zip}"/>
 		<zip destfile="${php.zip.full}">
