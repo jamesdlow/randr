@@ -149,7 +149,8 @@
 		<property name="php.zip.full" location="${build}/${php.zip}"/>
 		<zip destfile="${php.zip.full}">
 			<fileset dir="${build.php}">
-				<include name="randrrestlib.php"/>
+				<include name="**"/>
+				<exclude name="**/.svn/**"/>
 			</fileset>
 		</zip>
 		<property name="source.zip" value="randr-source-${new.version}.zip"/>
@@ -190,6 +191,11 @@
 				file="${java.zip.full}"
 				filetype="binary_zip"
 				processortype="platform_independent"/>
+			<filespec
+				file="${php.zip.full}"
+				filetype="binary_zip"
+				processortype="platform_independent"/>
+
 		</sfpublish>
 	</target>
 
@@ -201,7 +207,7 @@
 			filename="${source.zip.full}"
 			targetfilename="${source.zip}"
 			summary="R And R Source Code"
-			labels="OpSys-OSX, Type-Source, RandR, Source"/>
+			labels="Type-Source, RandR, Source"/>
 		<gcupload
 			username="${google.username}"
 			password="${google.password}"
@@ -209,7 +215,15 @@
 			filename="${java.zip.full}"
 			targetfilename="${java.zip}"
 			summary="R And R Java Library"
-			labels="Featured, OpSys-OSX, Type-Source, RandR, Java"/>
+			labels="Featured, Type-Source, RandR, Java"/>
+		<gcupload
+			username="${google.username}"
+			password="${google.password}"
+			projectname="${google.project}"
+			filename="${php.zip.full}"
+			targetfilename="${php.zip}"
+			summary="R And R PHP Library"
+			labels="Featured, Type-Source, RandR, PHP"/>
 	</target>
 	
 	<target name="deploy" description="Deploy All To GoogleCode And Sourceforge" depends="sourceforge,google">
