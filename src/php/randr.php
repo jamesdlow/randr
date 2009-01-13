@@ -4,7 +4,7 @@
  * Date: 13/08/2008
  * Website: http://code.google.com/p/randr/
  * About: RandR (REST and relaxtion) generic REST library
- * Version: @RandRVersion@
+ * Version: ${new.version}
  */
 
 class BaseException extends Exception {
@@ -14,13 +14,13 @@ class BaseException extends Exception {
 	}
 }
 
-class RestException extends Exception {
+class RestException extends BaseException {
 	function __construct($errorMsg, $number = -1, $exception = null) {
 		parent::__construct($errorMsg, $number, $exception);
 	}
 }
 
-class ResponseException extends Exception {
+class ResponseException extends BaseException {
 	function __construct($errorMsg, $number = -1, $exception = null) {
 		parent::__construct($errorMsg, $number, $exception);
 	}
@@ -29,9 +29,13 @@ class ResponseException extends Exception {
 class RestResult {
 	function __construct($result) {
 		$xml = new SimpleXMLElement($result);
-		$this->status = strtoupper($this->xml[RestClass::STATUS]) == 'SUCCESS';
-		$this->code = $this->xml[RestClass::CODE];
-		$this->message = $this->xml[RestClass::MESSAGE];
+		//print_r($xml);
+		$status = RestClass::STATUS;
+		$code = RestClass::CODE;
+		$message = RestClass::MESSAGE;
+		$this->status = strtoupper($xml->$status) == 'SUCCESS';
+		$this->code = $xml->$code;
+		$this->message = $xml->$message;
 	}
 	function getStatus() {
 		return $this->status;
@@ -135,7 +139,7 @@ class RestService extends RestClass {
 	}
 	
 	function response($message, $code = 0, $success = true) {
-		return "<".RestClass::RESULT."><".RestClass::STATUS.">".($success ? RestClass::SUCCESS : RestClass::ERROR)."</".RestClass::STATUS."><".RestClass::CODE.">".$code."</".RestClass::CODE."><".RestClass::MESSAGE.">".$message."</".RestClass::MESSAGE."></".RestClass::RESULT.">";
+		return "<".RestClass::RESULT."><".RestClass::STATUS.">".($success ? RestClass::SUCCESS : RestClass::ERROR)."</".RestClass::STATUS."><".RestClass::CODE.">".$code."</".RestClass::CODE."><".RestClass::MESSAGE."><![CDATA[".$message."]]></".RestClass::MESSAGE."></".RestClass::RESULT.">";
 	}
 	//Send success XML
 	function success($msg, $code = 0) {
@@ -323,6 +327,7 @@ class HTTPRequest {
 		// fetch
 		$this->_fp = fsockopen(($this->_protocol == 'https' ? 'ssl://' : '') . $this->_host, $this->_port);
 		fwrite($this->_fp, $req);
+		$response = '';
 		while(is_resource($this->_fp) && $this->_fp && !feof($this->_fp)) {
 			$response .= fread($this->_fp, 1024);
 		}
