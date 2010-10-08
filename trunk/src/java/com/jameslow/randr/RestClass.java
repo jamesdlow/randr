@@ -26,6 +26,9 @@ public class RestClass {
 	public static final String SUCCESS = "SUCCESS";
 	public static final String ERROR = "ERROR";
 
+	public RestClass() {
+		this(null);
+	}
 	public RestClass(String apikey) {
 		this(apikey,null);
 	}
@@ -41,6 +44,9 @@ public class RestClass {
 		reserved[1] = this.timevar;
 		reserved[2] = this.apivar;
 		reserved[3] = this.testvar;
+	}
+	public void setApiKey(String apikey) {
+		this.apikey = apikey;
 	}
 	public String getApiKey() {
 		return apikey;

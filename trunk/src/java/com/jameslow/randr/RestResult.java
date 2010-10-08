@@ -12,16 +12,23 @@ public class RestResult {
 	private boolean status;
 	private int code;
 	private String message;
+	private String result = null;
 
+	public RestResult(boolean status, int code, String message) {
+		this.status = status;
+		this.code = code;
+		this.message = message;
+	}
 	public RestResult(String result) throws RestException {
 		try {
+			this.result = result;
 			if ("".compareTo(result) != 0) {
 				DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 				DocumentBuilder db = dbf.newDocumentBuilder();
 				Document dom = db.parse(new InputSource(new StringReader(result)));
 				Element docEle = dom.getDocumentElement();
 				if (RestClass.RESULT.compareTo(docEle.getNodeName()) != 0) {
-					throw new RestException("Root node in result must be "+RestClass.RESULT+".",-1);
+					throw new RestException("Root node in "+result+" must be "+RestClass.RESULT+".",-1);
 				}
 				status = RestClass.SUCCESS.compareTo(getResult(docEle,RestClass.STATUS).toUpperCase()) == 0;
 				code = Integer.parseInt(getResult(docEle,RestClass.CODE));
@@ -30,7 +37,7 @@ public class RestResult {
 		} catch(RestException e) {
 			throw e;
 		} catch(Exception e) {
-			throw new RestException("Error parsing <"+RestClass.RESULT+">.",-1,e);
+			throw new RestException("Error parsing "+result+".",-1,e);
 		}
 	}
 	
@@ -66,5 +73,8 @@ public class RestResult {
 	}
 	public String getMessage() {
 		return message;
+	}
+	public String getRawResult() {
+		return result;
 	}
 }
