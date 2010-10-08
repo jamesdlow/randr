@@ -9,6 +9,12 @@ public class RestService extends RestClass {
 	private int timeout;
 	private static final int TIMEOUT_DEFAULT = 15;
 	
+	public RestService(Map params, RestResponse response) throws ResponseException{
+		this(null,params,response);
+	}
+	public RestService(Map params, RestResponse response, String prefix, int timeout, boolean auto) throws ResponseException {
+		this(null,params,response,prefix,timeout,auto);
+	}
 	public RestService(String apikey, Map params, RestResponse response) throws ResponseException{
 		this(apikey,params,response,null,TIMEOUT_DEFAULT,true);
 	}
@@ -22,10 +28,12 @@ public class RestService extends RestClass {
 			process();
 		}
 	}
-	
 	//Main function that processes request
 	public void process() throws ResponseException {
 		try {
+			if (apikey == null) {
+				setApiKey(getApiKeyImplementation());
+			}
 			validate();
 			String test = "";
 			if (params.containsKey(testvar)) {
@@ -42,7 +50,14 @@ public class RestService extends RestClass {
 			response.WriteError(e);
 		}
 	}
-	
+	//Get the api key from params or ip address or something, child classes should implement this function if the api key isn't specifiedy during construction
+	public String getApiKeyImplementation() throws RestException {
+		return "";
+	}
+	//Process the request, child classes should implement this function to process the request params
+	protected String processImplementation() throws RestException {
+		return "";
+	}
 	protected String testImplementation() throws RestException {
 		String message = "";
 		boolean firsttime = true;
@@ -57,11 +72,6 @@ public class RestService extends RestClass {
 			message = message + (String)e.getKey() + ":" + (String)e.getValue();
 		}
 		return message;
-	}
-	
-	//Process the request, child classes should implement this function to process the request params
-	protected String processImplementation() throws RestException {
-		return "";
 	}
 	
 	//Validate the common params

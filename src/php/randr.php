@@ -9,7 +9,7 @@
 
 class BaseException extends Exception {
 	function __construct($errorMsg, $number = -1, $exception = null) {
-		parent::__construct($errorMsg . ($exception == null ? '' : RestClass::DELIM + " " + $exception.getMessage()), $number);
+		parent::__construct($errorMsg . ($exception == null ? '' : RestClass::DELIM . " " . $exception->getMessage()), $number);
 		$this->exception = $exception;
 	}
 }
@@ -27,15 +27,22 @@ class ResponseException extends BaseException {
 }
 
 class RestResult {
-	function __construct($result) {
-		$xml = new SimpleXMLElement($result);
-		//print_r($xml);
-		$status = RestClass::STATUS;
-		$code = RestClass::CODE;
-		$message = RestClass::MESSAGE;
-		$this->status = strtoupper($xml->$status) == 'SUCCESS';
-		$this->code = $xml->$code;
-		$this->message = $xml->$message;
+	function __construct($result = null, $status = null, $code = null, $message = null) {
+		$this->result = $result;
+		if ($result != null) {
+			$xml = new SimpleXMLElement($result);
+			//print_r($xml);
+			$status = RestClass::STATUS;
+			$code = RestClass::CODE;
+			$message = RestClass::MESSAGE;
+			$this->status = strtoupper($xml->$status) == 'SUCCESS';
+			$this->code = $xml->$code;
+			$this->message = $xml->$message;
+		} else {
+			$this->status = $status;
+			$this->code = $code;
+			$this->message = $message;
+		}
 	}
 	function getStatus() {
 		return $this->status;
@@ -45,6 +52,9 @@ class RestResult {
 	}
 	function getMessage() {
 		return $this->message;
+	}
+	function getRawResult() {
+		return $this->result;
 	}
 }
 
@@ -63,7 +73,7 @@ abstract class RestClass {
 	const SUCCESS = 'SUCCESS';
 	const ERROR = 'ERROR';
 	
-	function __construct ($apikey, $prefix = null) {
+	function __construct ($apikey = null, $prefix = null) {
 		$this->apikey = $apikey;
 		$this->prefix = (isset($prefix) ? $prefix . '_' : '');
 		$this->sigvar = $this->prefix . RestClass::SIG;
@@ -74,6 +84,9 @@ abstract class RestClass {
 		$this->reserved[] = $this->timevar;
 		$this->reserved[] = $this->apivar;
 		$this->reserved[] = $this->testvar;
+	}
+	function setApiKey($apikey) {
+		$this->apikey = $apikey;
 	}
 	//Check the params are signed with the api key and can therefore be trusted
 	function signature($params) {
@@ -94,7 +107,7 @@ abstract class RestClass {
 
 //Rest service, a server wanting to process a rest request should extend this class
 class RestService extends RestClass {
-	function __construct ($apikey, $prefix = null, $timeout = 15, $params = null, $auto = true) {
+	function __construct ($apikey = null, $prefix = null, $timeout = 15, $params = null, $auto = true) {
 		parent::__construct($apikey, $prefix);
 		//If params are passed to this class, use them, otherwise use $_REQUEST
 		if (isset($params)) {
@@ -108,8 +121,12 @@ class RestService extends RestClass {
 			$this->process();
 		}
 	}
+	//Main function that processes request
 	function process() {
 		try {
+			if ($this->apikey == null) {
+				$this->setApiKey($this->getApiKeyImplementation());
+			}
 			$this->validate();
 			$test = $this->params[$this->testvar];
 			if ($test == RestClass::TEST_ECHO) {
@@ -122,18 +139,23 @@ class RestService extends RestClass {
 			error($e->getMessage(), $e->getCode());
 		}
 	}
+	//Get the api key from params or ip address or something, child classes should implement this function if the api key isn't specifiedy during construction
+	function getApiKeyImplementation() {
+		return '';
+	}
+
 	//Process the request, child classes should implement this function to process the request params
 	function processImplementation() {}
 	
 	function testImplementation() {
-		$firstime = true;
+		$firsttime = true;
 		foreach ($params as $key => $value) {
 			if ($firsttime) {
 				$firsttime = false;
 			} else {
-				$message = $message + RestClass::DELIM;
+				$message = $message . RestClass::DELIM;
 			}
-			$message = $message + $key + ":" + $value;
+			$message = $message . $key . ":" . $value;
 		}
 		return $message;
 	}
@@ -289,7 +311,7 @@ class HTTPRequest {
 			if ($content == '') {
 				$content = $this->ParamEncode($key,$value);
 			} else {
-				$content .= '&' .$this->ParamEncode($key,$value);			
+				$content .= '&' .$this->ParamEncode($key,$value);
 			}
 		}
 		return $content;

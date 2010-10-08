@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 public class RestClient extends RestClass {
-	private String url;
+	protected String url;
 	private Map params = new HashMap();
 	
 	public RestClient(String url, String apikey) {
@@ -107,7 +107,7 @@ public class RestClient extends RestClass {
 			out.close();
 			int code = huc.getResponseCode();
 			StringBuffer result = new StringBuffer();
-			BufferedReader in = new BufferedReader( new InputStreamReader(huc.getInputStream()));
+			BufferedReader in = new BufferedReader(new InputStreamReader(huc.getInputStream()));
 			while (in.ready()) {
 				result.append(in.readLine());	
 			}
@@ -116,7 +116,7 @@ public class RestClient extends RestClass {
 				//Codes 200 - 300 indicate a correct response
 			} else {
 				throw new RestException("HTTP error occured: " + code);
-			}		    
+			}
 			return result.toString();
 		} catch (MalformedURLException e1) {
 			throw new RestException("Incorrect URL format",-1,e1);
