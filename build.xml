@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="RandR" default="all" basedir=".">
+<project name="RandR" default="build" basedir=".">
 	<property name="props" value="build.properties"/>
 	<property file="${props}"/>
 	<property name="secret" value="secret.properties"/>
@@ -8,7 +8,7 @@
 	<property name="tools" location="tools"/>
 		<property name="google" location="${tools}/google"/>
 		<property name="sourceforge" location="${tools}/sourceforge"/>
-		<property name="sflib" location="${sourceforge}/lib"/>
+		<property name="github" location="${tools}/github"/>
 	<property name="lib" location="lib"/>
 	<property name="src" location="src"/>
 		<property name="java" location="${src}/java"/>
@@ -18,7 +18,8 @@
 		<property name="build.java" location="${build}/java"/>
 		<property name="build.net" location="${build}/net"/>
 		<property name="build.php" location="${build}/php"/>
-		<property name="jarfile" location="${build}/${google.project}.jar"/>
+	<property name="dist" location="dist"/>
+		<property name="jarfile" location="${dist}/${github.repo}.jar"/>
 		
 	<condition property="version.do">
 		<istrue value="${build.doversion}"/>
@@ -36,8 +37,22 @@
 	</condition>
 	<echo message="Google classpath set to ${google.classpath}"/>
 	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="${google.classpath}" name="gcupload"/>
-	
-	<fileset id="sourceforge.jars" dir="${sflib}">
+
+	<fileset id="github-anttasks.jars" dir="${github}/lib">
+		<include name="**/*.jar"/>
+	</fileset>
+	<path id="github-anttasks.classpath">
+		<fileset refid="github-anttasks.jars"/>
+		<pathelement location="."/>
+		<fileset dir="${github}">
+			<include name="**/*.jar"/>
+		</fileset>
+	</path>
+	<taskdef name="github.createrelease" classname="com.github.api.CreateRelease" classpathref="github-anttasks.classpath" loaderref="github-anttasks.classpath.loader" />
+	<taskdef name="github.uploadasset" classname="com.github.api.UploadAsset" classpathref="github-anttasks.classpath" loaderref="github-anttasks.classpath.loader" />
+	<taskdef name="github.fullrelease" classname="com.github.api.FullRelease" classpathref="github-anttasks.classpath" loaderref="github-anttasks.classpath.loader" />
+
+	<fileset id="sourceforge.jars" dir="${sourceforge}/lib">
 		<include name="**/*.jar"/>
 	</fileset>
 	<path id="sourceforge.id">
@@ -130,30 +145,31 @@
 	</target>
 
 	<target name="release" depends="version" description="Create a new release of libraries">
-		<property name="java.zip" value="randr-java-${new.version}.zip"/>
-		<property name="java.zip.full" location="${build}/${java.zip}"/>
+		<property name="java.zip" value="${github.repo}-java-${new.version}.zip"/>
+		<property name="java.zip.full" location="${dist}/${java.zip}"/>
 		<zip destfile="${java.zip.full}">
-			<fileset dir="${build}">
-				<include name="${google.project}.jar"/>
+			<fileset dir="${dist}">
+				<include name="${github.repo}.jar"/>
 			</fileset>
 		</zip>
 		<!--
-		<property name="net.zip" value="randr-net-${new.version}.zip"/>
-		<property name="net.zip.full" location="${build}/${net.zip}"/>
+		<property name="net.zip" value="${github.repo}-net-${new.version}.zip"/>
+		<property name="net.zip.full" location="${dist}/${net.zip}"/>
 		<zip destfile="${net.zip.full}">
 
 		</zip>
 		-->
-		<property name="php.zip" value="randr-php-${new.version}.zip"/>
-		<property name="php.zip.full" location="${build}/${php.zip}"/>
+		<property name="php.zip" value="${github.repo}-php-${new.version}.zip"/>
+		<property name="php.zip.full" location="${dist}/${php.zip}"/>
 		<zip destfile="${php.zip.full}">
 			<fileset dir="${build.php}">
 				<include name="**"/>
 				<exclude name="**/.svn/**"/>
 			</fileset>
 		</zip>
-		<property name="source.zip" value="randr-source-${new.version}.zip"/>
-		<property name="source.zip.full" location="${build}/${source.zip}"/>
+		<!--
+		<property name="source.zip" value="${github.repo}-source-${new.version}.zip"/>
+		<property name="source.zip.full" location="${dist}/${source.zip}"/>
 		<move file="secret.properties" tofile="secret.temp.properties"/>
 		<copy file="secret.example.properties" tofile="secret.properties"/>
 		<zip destfile="${source.zip.full}">
@@ -166,6 +182,7 @@
 		</zip>
 		<delete file="secret.properties"/>
 		<move file="secret.temp.properties" tofile="secret.properties"/>
+		-->
 	</target>
 
 	<target name="sourceforge" description="Deploy All To Sourceforge" depends="release">
@@ -225,11 +242,25 @@
 			labels="Featured, Type-Source, RandR, PHP"/>
 	</target>
 	
-	<target name="deploy" description="Deploy All To GoogleCode And Sourceforge" depends="sourceforge,google">
+	<target name="github" description="Deploy All To Github" depends="release">
+		<github.fullrelease
+			repouser="${github.repouser}"
+			repo="${github.repo}"
+			tokenuser="${github.tokenuser}"
+			token="${github.token}"
+			tag="${new.version}">
+			<fileset dir="${dist}" casesensitive="yes">
+				<filename name="**/*.zip"/>
+			</fileset>
+		</github.fullrelease>
+	</target>
+	
+	<target name="deploy" description="Deploy All To GoogleCode, GitHub And Sourceforge" depends="sourceforge,google,github">
 		<!-- At the moment deploy requires nothing else -->
 	</target>
 
 	<target name="clean" description="Remove build and dist directories">
 		<delete dir="${build}"/>
+		<delete dir="${dist}"/>
 	</target>
 </project>
