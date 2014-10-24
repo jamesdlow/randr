@@ -250,7 +250,8 @@
 			token="${github.token}"
 			tag="${new.version}">
 			<fileset dir="${dist}" casesensitive="yes">
-				<filename name="**/*.zip"/>
+				<include name="${php.zip}"/>
+				<include name="${java.zip}"/>
 			</fileset>
 		</github.fullrelease>
 	</target>
