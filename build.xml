@@ -6,8 +6,6 @@
 	<property file="${secret}"/>
 	<!-- Preexisitng Directories -->
 	<property name="tools" location="tools"/>
-		<property name="google" location="${tools}/google"/>
-		<property name="sourceforge" location="${tools}/sourceforge"/>
 		<property name="github" location="${tools}/github"/>
 	<property name="lib" location="lib"/>
 	<property name="src" location="src"/>
@@ -28,16 +26,6 @@
 		<isfalse value="${build.doversion}"/>
 	</condition>
 
-	<condition property="google.classpath"
-		value="${google};${google}/ant-googlecode-0.0.1.jar"
-		else="${google}/ant-googlecode-0.0.1.jar">
-		<not>
-			<available classname="org.apache.tools.ant.util.Base64Converter"/>
-		</not>
-	</condition>
-	<echo message="Google classpath set to ${google.classpath}"/>
-	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="${google.classpath}" name="gcupload"/>
-
 	<fileset id="github-anttasks.jars" dir="${github}/lib">
 		<include name="**/*.jar"/>
 	</fileset>
@@ -51,19 +39,6 @@
 	<taskdef name="github.createrelease" classname="com.github.api.CreateRelease" classpathref="github-anttasks.classpath" loaderref="github-anttasks.classpath.loader" />
 	<taskdef name="github.uploadasset" classname="com.github.api.UploadAsset" classpathref="github-anttasks.classpath" loaderref="github-anttasks.classpath.loader" />
 	<taskdef name="github.fullrelease" classname="com.github.api.FullRelease" classpathref="github-anttasks.classpath" loaderref="github-anttasks.classpath.loader" />
-
-	<fileset id="sourceforge.jars" dir="${sourceforge}/lib">
-		<include name="**/*.jar"/>
-	</fileset>
-	<path id="sourceforge.id">
-		<fileset refid="sourceforge.jars"/>
-		<pathelement path="${sourceforge}/sfutils-1.01RC1.jar"/>
-	</path>
-	<pathconvert property="sourceforge.classpath" pathsep=";">
-		<path refid="sourceforge.id"/>
-	</pathconvert>
-	<echo message="Sourceforge classpath set to ${sourceforge.classpath}"/>
-	<taskdef name="sfpublish" classname="org.apache.tools.ant.taskdefs.optional.sourceforge.SourceForgePublish" classpath="${sourceforge.classpath}"/>
 
 	<target name="compile.base64" description="Compile Base64 for versions of ant below 1.7">
 		<javac srcdir="${google}" destdir="${google}"
@@ -185,64 +160,7 @@
 		-->
 	</target>
 
-	<target name="sourceforge" description="Deploy All To Sourceforge" depends="release">
-		<tstamp>
-			<format property="sourceforge.date" pattern="d/M/yyyy"/>
-		</tstamp>
-		<sfpublish
-			releasename="${new.version}"
-			packagename="${sourceforge.project}"
-			packagehidden="no"
-			hidden="no"
-			projectshortname="${sourceforge.project}"
-			projectname="R And R"
-			username="${sourceforge.username}"
-			password="${sourceforge.password}"
-			releasedate="${sourceforge.date}">
-			<filespec
-				file="${source.zip.full}"
-				filetype="source_zip"
-				processortype="platform_independent"/>
-			<filespec
-				file="${java.zip.full}"
-				filetype="binary_zip"
-				processortype="platform_independent"/>
-			<filespec
-				file="${php.zip.full}"
-				filetype="binary_zip"
-				processortype="platform_independent"/>
-
-		</sfpublish>
-	</target>
-
-	<target name="google" description="Deploy All To GoogleCode" depends="release">
-		<gcupload
-			username="${google.username}"
-			password="${google.password}"
-			projectname="${google.project}"
-			filename="${source.zip.full}"
-			targetfilename="${source.zip}"
-			summary="R And R Source Code"
-			labels="Type-Source, RandR, Source"/>
-		<gcupload
-			username="${google.username}"
-			password="${google.password}"
-			projectname="${google.project}"
-			filename="${java.zip.full}"
-			targetfilename="${java.zip}"
-			summary="R And R Java Library"
-			labels="Featured, Type-Source, RandR, Java"/>
-		<gcupload
-			username="${google.username}"
-			password="${google.password}"
-			projectname="${google.project}"
-			filename="${php.zip.full}"
-			targetfilename="${php.zip}"
-			summary="R And R PHP Library"
-			labels="Featured, Type-Source, RandR, PHP"/>
-	</target>
-	
-	<target name="github" description="Deploy All To Github" depends="release">
+	<target name="github" description="Deploy All To GitHub" depends="release">
 		<github.fullrelease
 			repouser="${github.repouser}"
 			repo="${github.repo}"
@@ -255,8 +173,8 @@
 			</fileset>
 		</github.fullrelease>
 	</target>
-	
-	<target name="deploy" description="Deploy All To GoogleCode, GitHub And Sourceforge" depends="sourceforge,google,github">
+
+	<target name="deploy" description="Deploy to GitHub" depends="github">
 		<!-- At the moment deploy requires nothing else -->
 	</target>
 
